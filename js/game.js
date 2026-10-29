@@ -158,6 +158,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   let sparks=[], groundDust=[], blood=[], fragments=[], oneTime=new Set(), bike, speechUntil=0, speech='';
   let health=100, pukeExposure=0, pukeDamageTotal=0, pizzaHealingTotal=0, lostParts=new Set(), damageCooldown=0, stainMarks=[], hazardHits=new Map(), peakSpeed=0;
   let landingPoseUntil=0, bumpPoseUntil=0, damagePoseUntil=0, airtimeStartedAt=0;
+  let flipGroundImpactLatched=false; // One injury per genuinely inverted landing, not per physics tick.
   // Visual-only stunt animator. Physics stays authoritative; artwork never breaks apart.
   const motion={wheelie:0,air:0,launchAt:-99,landAt:-99,landPower:0,
     impactAt:-99,impactPower:0,crashAt:-99,demoWheelieUntil:-99,pose:'idle',previousPose:'idle',poseAt:0,
@@ -508,7 +509,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     $('stuntHud').classList.remove('active');
     previewPose=null;previewBearPose=null;throttleStartedAt=-99;wasPedaling=false;hazardReactUntil=-99;hazardReacted=new Set();dialogueStartedAt=-99;landingWasHard=false;
     panicHighTime=0;panicEpisodeUntil=0;panicEpisodeCooldown=0;panicReliefUntil=0;panicEpisodeType='';panicShock=0;panicEvents=0;pukeWheelSlipUntil=0;
-    projectileImpactFX.length=0;impactCues=[];encounterHeat=0;lastHitKind='none';reactionCount=0;baby=null;bearThrown=null;seatThrown=null;pukeDrops.length=0;pukeSplatters.length=0;pukeEmissionCount=0;pukeWaveStart=-99;pukeWaveEnd=-99;pukeNextWave=0;pukeWaveCount=0;pukeEmitAccumulator=0;cryingTears.length=0;babyPeeDrops.length=0;babyPeeMarks.length=0;cryingStartedAt=-99;cryingNextSound=0;babyPeeUntil=-99;cryTearsEmitted=0;v126PeeEmission=0;babyHitAt=-99;recentHitPart='none';stars.forEach(s=>s.got=false);keys.clear();sparks=[];groundDust=[];blood=[];fragments=[];stainMarks=[];hazardHits=new Map();lostParts=new Set();health=100;pukeExposure=0;pukeDamageTotal=0;pizzaHealingTotal=0;damageCooldown=0;crewState.clear();projectiles.length=0;thrownCount=0;dodgedCount=0;hitCount=0;landingPoseUntil=0;bumpPoseUntil=0;damagePoseUntil=0;airtimeStartedAt=0;
+    projectileImpactFX.length=0;impactCues=[];encounterHeat=0;lastHitKind='none';reactionCount=0;baby=null;bearThrown=null;seatThrown=null;pukeDrops.length=0;pukeSplatters.length=0;pukeEmissionCount=0;pukeWaveStart=-99;pukeWaveEnd=-99;pukeNextWave=0;pukeWaveCount=0;pukeEmitAccumulator=0;cryingTears.length=0;babyPeeDrops.length=0;babyPeeMarks.length=0;cryingStartedAt=-99;cryingNextSound=0;babyPeeUntil=-99;cryTearsEmitted=0;v126PeeEmission=0;babyHitAt=-99;recentHitPart='none';stars.forEach(s=>s.got=false);keys.clear();sparks=[];groundDust=[];blood=[];fragments=[];stainMarks=[];hazardHits=new Map();lostParts=new Set();health=100;pukeExposure=0;pukeDamageTotal=0;pizzaHealingTotal=0;damageCooldown=0;crewState.clear();projectiles.length=0;thrownCount=0;dodgedCount=0;hitCount=0;landingPoseUntil=0;bumpPoseUntil=0;damagePoseUntil=0;airtimeStartedAt=0;flipGroundImpactLatched=false;
     time=0;seconds=0;panic=0;maxDist=0;numStars=0;bonus=0;score=0;checkpoint=0;checkpointLabel='START';
     landingCount=0;airTime=0;airborne=false;perfectLandings=0;babyHead=0;babyHeadV=0;jumpBuffer=0;lastContactAt=-100;hasEverGrounded=false;cameraShake=0;nextBarkAt=4;barkCount=0;
     cameraX=0;cameraY=0;deathAt=0;winAt=0;oneTime.clear();dialogueQueue=[];dialogueActive=null;dialogueUntil=0;dialogueCooldown=0;deathReason='';
@@ -543,7 +544,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     bike={x:spot.x+34,y:spot.y-95,vx:45,vy:0,a:0,va:0,contact:false,cycle:0,expression:'original_photo',broken:false,lean:0};
     Object.assign(motion,{wheelie:0,air:0,launchAt:-99,landAt:-99,landPower:0,impactAt:-99,impactPower:0,crashAt:-99,demoWheelieUntil:-99,pose:'idle',previousPose:'idle',poseAt:time,extraPitch:0,recoil:0,legKick:0,squash:0,stunt:'ride'});
     throttleStartedAt=-99;wasPedaling=false;hazardReactUntil=-99;hazardReacted=new Set();dialogueStartedAt=-99;landingWasHard=false;
-    projectileImpactFX.length=0;impactCues=[];encounterHeat=0;lastHitKind='none';reactionCount=0;baby=null;bearThrown=null;seatThrown=null;pukeDrops.length=0;pukeSplatters.length=0;pukeEmissionCount=0;pukeWaveStart=-99;pukeWaveEnd=-99;pukeNextWave=0;pukeWaveCount=0;pukeEmitAccumulator=0;cryingTears.length=0;babyPeeDrops.length=0;babyPeeMarks.length=0;cryingStartedAt=-99;cryingNextSound=0;babyPeeUntil=-99;cryTearsEmitted=0;v126PeeEmission=0;babyHitAt=-99;recentHitPart='none';blood=[];fragments=[];stainMarks=[];lostParts=new Set();health=100;pukeExposure=0;pukeDamageTotal=0;pizzaHealingTotal=0;damageCooldown=0;hazardHits=new Map();crewState.clear();projectiles.length=0;panic=15;panicHighTime=0;panicEpisodeUntil=0;panicEpisodeCooldown=0;panicReliefUntil=0;panicEpisodeType='';panicShock=0;panicEvents=0;pukeWheelSlipUntil=0;airTime=0;airborne=false;deathAt=0;deathReason='';babyHead=0;babyHeadV=0;cameraShake=0;hasEverGrounded=true;nextBarkAt=time+3;landingPoseUntil=0;bumpPoseUntil=0;damagePoseUntil=0;airtimeStartedAt=0;
+    projectileImpactFX.length=0;impactCues=[];encounterHeat=0;lastHitKind='none';reactionCount=0;baby=null;bearThrown=null;seatThrown=null;pukeDrops.length=0;pukeSplatters.length=0;pukeEmissionCount=0;pukeWaveStart=-99;pukeWaveEnd=-99;pukeNextWave=0;pukeWaveCount=0;pukeEmitAccumulator=0;cryingTears.length=0;babyPeeDrops.length=0;babyPeeMarks.length=0;cryingStartedAt=-99;cryingNextSound=0;babyPeeUntil=-99;cryTearsEmitted=0;v126PeeEmission=0;babyHitAt=-99;recentHitPart='none';blood=[];fragments=[];stainMarks=[];lostParts=new Set();health=100;pukeExposure=0;pukeDamageTotal=0;pizzaHealingTotal=0;damageCooldown=0;hazardHits=new Map();crewState.clear();projectiles.length=0;panic=15;panicHighTime=0;panicEpisodeUntil=0;panicEpisodeCooldown=0;panicReliefUntil=0;panicEpisodeType='';panicShock=0;panicEvents=0;pukeWheelSlipUntil=0;airTime=0;airborne=false;deathAt=0;deathReason='';babyHead=0;babyHeadV=0;cameraShake=0;hasEverGrounded=true;nextBarkAt=time+3;landingPoseUntil=0;bumpPoseUntil=0;damagePoseUntil=0;airtimeStartedAt=0;flipGroundImpactLatched=false;
     oneTime.delete('crashed');dialogueQueue=[];dialogueActive=null;dialogueCooldown=time+.3;
     tricks.wheelieSeconds=0;tricks.wheelieMeters=0;tricks.lastWheelie=false;
     tricks.combo=0;tricks.lastTrickAt=-99;tricks.hazardsPassed=new Set();
@@ -1276,8 +1277,9 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     if(state==='playing' && !baby){
       if(active){
         const dose=clamp((bike.vx-MAX_SPEED*.77)/(MAX_SPEED*.23),.24,1);
-        pukeExposure=clamp(pukeExposure+dt*(.12+.23*dose),0,1);
-        const loss=dt*(1.65+7.3*pukeExposure)*(.4+.6*dose);
+        pukeExposure=clamp(pukeExposure+dt*(.34+.56*dose),0,1);
+        // Vomiting is a serious, clearly visible HP threat; no passive drain between heaves.
+        const loss=dt*(10+26*pukeExposure)*(.65+.35*dose);
         health=clamp(health-loss,0,100);
         pukeDamageTotal+=loss;
         if(health<=0){crash('baby sickness overwhelmed the bear');}
@@ -1424,12 +1426,13 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     const bikeOldX=p.x,bikeOldY=p.y;
     const ground=p.contact;
     if(state==='playing'){
-      if(gas) p.vx+=(p.contact?(p.vx<420?560:460):265)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
-      if(brake) p.vx=p.vx>0?Math.max(0,p.vx-1560*dt):Math.min(0,p.vx+300*dt);
+      // Brake first, then reverse while held once the bike has stopped.
+      if(brake) p.vx=p.vx>0?Math.max(0,p.vx-1560*dt):Math.max(-210,p.vx-(p.contact?360:120)*dt);
+      else if(gas) p.vx+=(p.contact?(p.vx<420?560:460):265)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
       // Keep momentum while coasting; at high speed the rider must actually brake.
       if(!gas&&!brake)p.vx*=Math.exp(-(p.contact?.16:.065)*dt);
       if(p.contact && p.vx>8)p.vx+=clamp(slopeAt(p.x+24),-.7,.75)*245*dt;
-      p.vx=clamp(p.vx,-95,MAX_SPEED);peakSpeed=Math.max(peakSpeed,p.vx);
+      p.vx=clamp(p.vx,-210,MAX_SPEED);peakSpeed=Math.max(peakSpeed,p.vx);
       p.va+=steer*(ground?3.15:6.2)*dt;
     }else p.vx*=Math.exp(-2.1*dt);
     if(state==='playing'&&!steer){
@@ -1439,7 +1442,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     }
     p.va*=Math.exp(-(ground?3.6:1.2)*dt);
     p.vy+=1420*dt;
-    p.x+=p.vx*dt;
+    p.x=Math.max(110,p.x+p.vx*dt); // Keep reversing inside the drivable world's start boundary.
+    if(p.x===110 && p.vx<0)p.vx=0;
     p.y+=p.vy*dt;
     p.a+=p.va*dt;
     p.cycle+=p.vx/Math.max(1,TIRE_R)*dt;
@@ -1488,7 +1492,16 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
       }else if(!p.broken){
         p.va+=(p.a>0?-.3:.3)*dt;
       }
-      if((Math.abs(p.a)>2.18&&Math.abs(p.vx)>120)&&!p.broken)injure(35,'flip',true);
+    }
+    if(p.contact && !p.broken){
+      // A completed 360-degree flip is upright again; compare the wrapped angle to road slope.
+      const relativeAngle=Math.atan2(Math.sin(p.a-slopeAt(p.x+24)),Math.cos(p.a-slopeAt(p.x+24)));
+      if(Math.abs(relativeAngle)<1.25)flipGroundImpactLatched=false;
+      else if(!flipGroundImpactLatched && Math.abs(relativeAngle)>2.25 &&
+        (Math.abs(p.vx)>120 || Math.abs(relativeAngle)>2.85)){
+        flipGroundImpactLatched=true;
+        injure(35,'flip',true);
+      }
     }
     if(state==='playing'){
       const d=districtAt(p.x);const districtCode='district:'+d.style;
@@ -1531,7 +1544,6 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
         }
       }
       if(p.y>fallReference(p.x)+435)crash('gravity wins again');
-      if(Math.abs(p.a)>2.85&&p.contact)injure(29,'gymnastics',true);
       // Pickup hit testing uses visible rider and passenger geometry, not the
       // bicycle's internal center. The small wrapper should collect if the bear
       // really touches it during ordinary cycling, without a forced hop.
@@ -1722,8 +1734,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   function updateHud(){
     $('distance').innerHTML=`${String(Math.max(0,Math.round((bike.x-200)/10))).padStart(4,'0')} <small>m</small>`;
     $('progressFill').style.width=`${clamp((bike.x-200)/(FINISH-200)*100,0,100)}%`;
-    const kph=Math.max(0,Math.round(bike.vx*.33));
-    $('speedValue').textContent=kph+' KM/H';
+    const kph=Math.round(Math.abs(bike.vx)*.33);
+    $('speedValue').textContent=(bike.vx<-.5?'R ':'')+kph+' KM/H';
     $('speedValue').style.color= bike.x>FINISH-BRAKE_ZONE&&bike.vx>SAFE_FINISH_SPEED?'#ff826d':kph>160?'#ffe08b':'#c6fff6';
     const left=Math.max(0,Math.round((FINISH-bike.x)/10));
     const stopLabel=$('brakeAlert');
