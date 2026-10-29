@@ -79,7 +79,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d', {alpha:false});
-  const W = canvas.width, H = canvas.height, WORLD_STRETCH=1.50, stretchX=x=>Math.round(x*WORLD_STRETCH), FINISH=stretchX(28000), MAX_SPEED=1280, SAFE_FINISH_SPEED=130, BRAKE_ZONE=3900;
+  // Ten world pixels represent one metre: one px/s equals 0.36 km/h.
+  const W = canvas.width, H = canvas.height, WORLD_STRETCH=1.50, stretchX=x=>Math.round(x*WORLD_STRETCH), FINISH=stretchX(28000), MAX_SPEED=110, SAFE_FINISH_SPEED=38, BRAKE_ZONE=950, REVERSE_MAX=52, KMH_PER_SPEED=.36;
   const $ = id => document.getElementById(id);
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
   const lerp=(a,b,t)=>a+(b-a)*t;
@@ -563,7 +564,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     else if(raw.startsWith('CHECKPOINT:'))short='CHECKPOINT SAVED';
     else if(raw.startsWith('BABY MELTDOWN'))short='BABY PANIC!';
     else if(raw.startsWith('MÄLAREN BRAKING ZONE'))short='BRAKE FOR THE FINISH';
-    else if(raw.startsWith('SLOW TO 120'))short='SLOW DOWN';
+    else if(raw.startsWith('SLOW TO 14 KM/H'))short='SLOW DOWN';
     else if(raw.includes(' HIT · BEAR '))short='BEAR HIT';
     else if(raw.startsWith('MÄLAREN FINISH'))short='FINISH!';
     if(raw===short && !/^(BEAR POSE|BABY POSE|UNSCHEDULED|GRAVITY HAS|PHYSICS:|PASSENGER SURVIVED|REWINDING)/.test(raw))return;
@@ -737,7 +738,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
       }
       if(!c){c={phase:'idle',since:time,result:null};crewState.set(crew.x,c);}
       ensureCrewState(crew,c);
-      const canAttack=d>-260&&d<Math.max(550,Math.min(900,bike.vx*1.56+140));
+      // Slower cycling should not mean endless enemy volleys.
+      const canAttack=d>-140&&d<Math.max(210,Math.min(340,Math.max(0,bike.vx)*1.85+60));
       for(let i=0;i<crew.count;i++){
         const m=c.members[i];
         if(m.phase==='idle'&&canAttack&&time>=m.nextReadyAt){
@@ -1027,7 +1029,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
       tricks.hazardsPassed.add(key);
       const gy=groundAt(h.x)??420;
       const nearEnough=(p.y>gy-195 && p.y<gy-38) || (h.type==='saw'&&Math.abs(p.y-h.y)<120);
-      if(nearEnough && p.vx>110 && !hazardHits.has(key) && time>damageCooldown+.5)
+      if(nearEnough && p.vx>MAX_SPEED*.64 && !hazardHits.has(key) && time>damageCooldown+.5)
         awardTrick('THAT WAS TOO CLOSE',85,'near');
     }
     if(tricks.combo && time-tricks.lastTrickAt>8.0)tricks.combo=0;
@@ -1427,12 +1429,12 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     const ground=p.contact;
     if(state==='playing'){
       // Brake first, then reverse while held once the bike has stopped.
-      if(brake) p.vx=p.vx>0?Math.max(0,p.vx-1560*dt):Math.max(-210,p.vx-(p.contact?360:120)*dt);
-      else if(gas) p.vx+=(p.contact?(p.vx<420?560:460):265)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
+      if(brake) p.vx=p.vx>0?Math.max(0,p.vx-225*dt):Math.max(-REVERSE_MAX,p.vx-(p.contact?105:45)*dt);
+      else if(gas) p.vx+=(p.contact?(p.vx<70?55:27):28)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
       // Keep momentum while coasting; at high speed the rider must actually brake.
       if(!gas&&!brake)p.vx*=Math.exp(-(p.contact?.16:.065)*dt);
       if(p.contact && p.vx>8)p.vx+=clamp(slopeAt(p.x+24),-.7,.75)*245*dt;
-      p.vx=clamp(p.vx,-210,MAX_SPEED);peakSpeed=Math.max(peakSpeed,p.vx);
+      p.vx=clamp(p.vx,-REVERSE_MAX,MAX_SPEED);peakSpeed=Math.max(peakSpeed,p.vx);
       p.va+=steer*(ground?3.15:6.2)*dt;
     }else p.vx*=Math.exp(-2.1*dt);
     if(state==='playing'&&!steer){
@@ -1559,8 +1561,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
         oneTime.add('brake-zone');banner('MÄLAREN BRAKING ZONE · HOLD ↓ / S',3.1);
         talk('BABY','THIS IS NOT A FERRY RAMP! BRAKE, YOU FURRY IDIOT!',3.4,true);
       }
-      if(distanceToFinish<1100 && p.vx>SAFE_FINISH_SPEED && !oneTime.has('brake-last')){
-        oneTime.add('brake-last');banner('SLOW TO 120 OR LESS AT FINISH!',2.7);
+      if(distanceToFinish<450 && p.vx>SAFE_FINISH_SPEED && !oneTime.has('brake-last')){
+        oneTime.add('brake-last');banner('SLOW TO 14 KM/H OR LESS AT FINISH!',2.7);
       }
       if(p.x>=FINISH-90 && p.vx<=SAFE_FINISH_SPEED && p.contact){win();}
       else if(p.x>=FINISH && p.vx>SAFE_FINISH_SPEED){
@@ -1569,7 +1571,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
         crash('forgot the brakes at Mälaren');
       }
       const airStress=!p.contact ? 18:0;
-      const velocityStress=Math.max(0,p.vx-135)*.085;
+      // Calm at cruising speed; the highest downhill speed can still trigger panic.
+      const velocityStress=Math.max(0,p.vx/MAX_SPEED-.50)*110;
       let danger=0;
       for(const h of hazards)if(h.x>p.x&&h.x<p.x+260)danger=Math.max(danger,(260-(h.x-p.x))*.14);
       let pitAhead=groundAt(p.x+120)===null?17:0;
@@ -1582,7 +1585,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
       const mood=(panic<11?'original_photo':panic<22?'happy':panic<37?'confused':panic<53?'excited':panic<70?'derp':panic<84?'terrified':panic<95?'sick':'terrified');
       p.expression=mood;
       maxDist=Math.max(maxDist,p.x);
-      if(p.contact && Math.abs(p.a)>.22 && Math.abs(p.a)<1.2 && p.vx>170 && p.va<1.2){
+      if(p.contact && Math.abs(p.a)>.22 && Math.abs(p.a)<1.2 && p.vx>MAX_SPEED*.70 && p.va<1.2){
         if(!oneTime.has('wheelieFunny')&&p.x>1100){talk('BABY','I CAN SEE MY CREDIT SCORE FROM HERE.',2.7);oneTime.add('wheelieFunny');}
       }
       if(panic>85&&!oneTime.has('panicEpisode')){talk('BABY','YOU ARE A BEAR! YOU CANNOT DRIVE!',3);oneTime.add('panicEpisode');}
@@ -1734,9 +1737,9 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   function updateHud(){
     $('distance').innerHTML=`${String(Math.max(0,Math.round((bike.x-200)/10))).padStart(4,'0')} <small>m</small>`;
     $('progressFill').style.width=`${clamp((bike.x-200)/(FINISH-200)*100,0,100)}%`;
-    const kph=Math.round(Math.abs(bike.vx)*.33);
+    const kph=Math.round(Math.abs(bike.vx)*KMH_PER_SPEED);
     $('speedValue').textContent=(bike.vx<-.5?'R ':'')+kph+' KM/H';
-    $('speedValue').style.color= bike.x>FINISH-BRAKE_ZONE&&bike.vx>SAFE_FINISH_SPEED?'#ff826d':kph>160?'#ffe08b':'#c6fff6';
+    $('speedValue').style.color= bike.x>FINISH-BRAKE_ZONE&&bike.vx>SAFE_FINISH_SPEED?'#ff826d':kph>33?'#ffe08b':'#c6fff6';
     const left=Math.max(0,Math.round((FINISH-bike.x)/10));
     const stopLabel=$('brakeAlert');
     stopLabel.textContent= bike.x>FINISH-BRAKE_ZONE ? (bike.vx>SAFE_FINISH_SPEED?'BRAKE':'STOP AHEAD') : '';
@@ -5152,7 +5155,7 @@ function babyFigure(expr, thrown=false, pose='idle'){
     if(state==='won')return 3;
     if(state==='dead'||state==='dead_end'||bike.broken)return 1;
     const speed=Math.max(0,bike.vx);
-    return speed<125?0:speed<335?1:speed<555?2:speed<785?3:4;
+    return speed<MAX_SPEED*.22?0:speed<MAX_SPEED*.43?1:speed<MAX_SPEED*.66?2:speed<MAX_SPEED*.84?3:4;
   }
   // v7.7: every riding pose now contains its own painted face for each speed.
   // The face_* artwork in the archive belongs to the BABY, not the bear.
@@ -5229,8 +5232,8 @@ function babyFigure(expr, thrown=false, pose='idle'){
     ctx.restore();
   }
   function drawSpeedWheels(p){
-    const speed=Math.abs(p.vx);if(speed<90)return;
-    const alpha=clamp((speed-90)/350,0,.4);
+    const speed=Math.abs(p.vx);if(speed<MAX_SPEED*.58)return;
+    const alpha=clamp((speed-MAX_SPEED*.58)/(MAX_SPEED*.42)*.4,0,.4);
     ctx.save();ctx.strokeStyle='rgba(236,249,255,'+alpha.toFixed(3)+')';ctx.lineWidth=4;
     for(const wx of [REAR_X,FRONT_X]){
       ctx.beginPath();ctx.arc(wx,WHEEL_Y,35,p.cycle+.3,p.cycle+1.7);ctx.stroke();
@@ -5856,10 +5859,10 @@ function babyFigure(expr, thrown=false, pose='idle'){
       $('debugFps').textContent=debugPerf.fps?String(debugPerf.fps):'--';
       $('debugMs').textContent=debugPerf.drawMs?debugPerf.drawMs.toFixed(1):'--';
       $('debugSim').textContent=String(debugPerf.steps);
-      $('debugReadout').textContent=`STATE       ${state}${debugOpen?' · MENU HOLD':''}\nDISTRICT    ${districtAt(bike.x).name}\nMAP X       ${x} / 28000\nCAMERA      ${Math.round(cameraX)}, ${cy}\nBIKE        ${Math.round(bike.x)}, ${Math.round(bike.y)}\nSPEED       ${Math.round(bike.vx*.33)} km/h\nHEALTH      ${Math.round(health)}%    PANIC ${Math.round(panic)}%\nGROUND Y    ${ground==null?'none':Math.round(ground)}\nENEMIES     ${gangCrews.length} crews  ·  ${hazards.length} hazards`;
+      $('debugReadout').textContent=`STATE       ${state}${debugOpen?' · MENU HOLD':''}\nDISTRICT    ${districtAt(bike.x).name}\nMAP X       ${x} / 28000\nCAMERA      ${Math.round(cameraX)}, ${cy}\nBIKE        ${Math.round(bike.x)}, ${Math.round(bike.y)}\nSPEED       ${Math.round(bike.vx*KMH_PER_SPEED)} km/h\nHEALTH      ${Math.round(health)}%    PANIC ${Math.round(panic)}%\nGROUND Y    ${ground==null?'none':Math.round(ground)}\nENEMIES     ${gangCrews.length} crews  ·  ${hazards.length} hazards`;
     }
     $('debugMini').hidden=!debugSettings.miniStats;
-    if(debugSettings.miniStats)$('debugMini').textContent=`${debugPerf.fps||'--'} FPS · ${debugPerf.drawMs.toFixed(1)} ms\nX ${x} · ${Math.round(bike.vx*.33)} km/h · HP ${Math.round(health)}`;
+    if(debugSettings.miniStats)$('debugMini').textContent=`${debugPerf.fps||'--'} FPS · ${debugPerf.drawMs.toFixed(1)} ms\nX ${x} · ${Math.round(bike.vx*KMH_PER_SPEED)} km/h · HP ${Math.round(health)}`;
   }
   function debugInit(){
     $('debugOpenBtn').addEventListener('click',()=>debugOpenMenu(!debugOpen));
@@ -6110,7 +6113,7 @@ function babyFigure(expr, thrown=false, pose='idle'){
   window.BEARLY_TOUCH_STATUS=()=>({pressed:[...keys],contacts:[...mobileContacts.entries()].map(([b,v])=>({key:b.dataset.key,count:v.size})),state, speed:bike.vx,x:bike.x,y:bike.y,contact:bike.contact,canvas:canvas.getBoundingClientRect().toJSON(),viewport:[innerWidth,innerHeight]});
   // A read-only snapshot for debugging and tuning the ride (no developer tools required).
   window.BEARLY_PANIC_TEST={max(){panic=100;panicHighTime=3.7;panicEpisodeCooldown=0;return true;},state(){return {panic,panicHighTime,panicEpisodeType,panicEvents,pukeWheelSlipUntil}}};
-  window.BEARLY_V89_TEST={pizza(){const s=stars.find(x=>!x.got);if(!s)return false;bike.x=s.x;bike.y=s.y;return true;},crew(i=0){const c=gangCrews[i];bike.x=c.x-510;bike.y=(groundAt(bike.x)??440)-94;bike.vx=620;return c.name;},health(v=50){health=clamp(v,0,100);return health;},panic(v=100){panic=clamp(v,0,100);return panic;},faster(){bike.vx=MAX_SPEED;return bike.vx;}};
+  window.BEARLY_V89_TEST={pizza(){const s=stars.find(x=>!x.got);if(!s)return false;bike.x=s.x;bike.y=s.y;return true;},crew(i=0){const c=gangCrews[i];bike.x=c.x-260;bike.y=(groundAt(bike.x)??440)-94;bike.vx=MAX_SPEED*.85;return c.name;},health(v=50){health=clamp(v,0,100);return health;},panic(v=100){panic=clamp(v,0,100);return panic;},faster(){bike.vx=MAX_SPEED;return bike.vx;}};
   window.BEARLY_V118_AUDIT=()=>({metro:v116MetroAnchor(),cleanStation:!!images.v118_metro_complete?.naturalWidth,treeLoaded:!!images.v118_close_tree?.naturalWidth,bushAssets:[0,1,2].map(i=>!!images['v118_close_bush_'+i]?.naturalWidth),near:{...v118CloseQA},backdropUnchanged:true});
   window.BEARLY_V117_AUDIT=()=>({forecourt:{...V117_FORECOURT},metro:v116MetroAnchor(),assets:['v59_courtyard_fence','v98_clean_lamp','v98_clean_bike_rack','v98_clean_planter'].map(k=>({key:k,loaded:!!images[k]?.naturalWidth})),restoredBackdrop:true});
   window.BEARLY_V116_AUDIT=()=>({station:v116MetroAnchor(),stationLoaded:!!images.v116_metro_clean?.naturalWidth,foreground:{...v116ForegroundAudit},background:'restored v110'});
