@@ -79,8 +79,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d', {alpha:false});
-  // Ten world pixels represent one metre: one px/s equals 0.36 km/h.
-  const W = canvas.width, H = canvas.height, WORLD_STRETCH=1.50, stretchX=x=>Math.round(x*WORLD_STRETCH), FINISH=stretchX(28000), MAX_SPEED=140, SAFE_FINISH_SPEED=38, BRAKE_ZONE=950, REVERSE_MAX=52, KMH_PER_SPEED=.36, PUKE_SPEED_RATIO=.95, TERROR_SPEED_RATIO=.86;
+  // Game-world scroll units are faster than real metres; the HUD uses an independent bicycle-speed scale.
+  const W = canvas.width, H = canvas.height, WORLD_STRETCH=1.50, stretchX=x=>Math.round(x*WORLD_STRETCH), FINISH=stretchX(28000), MAX_SPEED=700, SAFE_FINISH_SPEED=195, BRAKE_ZONE=1450, REVERSE_MAX=220, KMH_PER_SPEED=.072, PUKE_SPEED_RATIO=.95, TERROR_SPEED_RATIO=.86;
   const $ = id => document.getElementById(id);
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
   const lerp=(a,b,t)=>a+(b-a)*t;
@@ -738,8 +738,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
       }
       if(!c){c={phase:'idle',since:time,result:null};crewState.set(crew.x,c);}
       ensureCrewState(crew,c);
-      // Slower cycling should not mean endless enemy volleys.
-      const canAttack=d>-140&&d<Math.max(210,Math.min(340,Math.max(0,bike.vx)*1.85+60));
+      // Scale enemy warning range with actual bike movement, leaving time to dodge.
+      const canAttack=d>-260&&d<Math.max(500,Math.min(940,Math.max(0,bike.vx)*1.25+150));
       for(let i=0;i<crew.count;i++){
         const m=c.members[i];
         if(m.phase==='idle'&&canAttack&&time>=m.nextReadyAt){
@@ -1010,7 +1010,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     const localSlope=p.contact?slopeAt(p.x+24):0;
     // A real wheelie must lift the front end relative to the current slope;
     // merely holding the lean button does not earn points.
-    const wheeling=p.contact&&p.vx>75&&(p.a-localSlope)<-.15;
+    const wheeling=p.contact&&p.vx>MAX_SPEED*.20&&(p.a-localSlope)<-.15;
     if(wheeling){
       tricks.wheelieSeconds+=dt;
       tricks.wheelieMeters+=Math.max(0,p.vx)*dt/10;
@@ -1432,8 +1432,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     const ground=p.contact;
     if(state==='playing'){
       // Brake first, then reverse while held once the bike has stopped.
-      if(brake) p.vx=p.vx>0?Math.max(0,p.vx-225*dt):Math.max(-REVERSE_MAX,p.vx-(p.contact?105:45)*dt);
-      else if(gas) p.vx+=(p.contact?(p.vx<70?24:p.vx<112?15:9):22)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
+      if(brake) p.vx=p.vx>0?Math.max(0,p.vx-1050*dt):Math.max(-REVERSE_MAX,p.vx-(p.contact?400:160)*dt);
+      else if(gas) p.vx+=(p.contact?(p.vx<420?140:p.vx<590?90:55):130)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
       // Keep momentum while coasting; at high speed the rider must actually brake.
       if(!gas&&!brake)p.vx*=Math.exp(-(p.contact?.16:.065)*dt);
       if(p.contact && p.vx>8)p.vx+=clamp(slopeAt(p.x+24),-.7,.75)*245*dt;
@@ -1564,7 +1564,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
         oneTime.add('brake-zone');banner('MÄLAREN BRAKING ZONE · HOLD ↓ / S',3.1);
         talk('BABY','THIS IS NOT A FERRY RAMP! BRAKE, YOU FURRY IDIOT!',3.4,true);
       }
-      if(distanceToFinish<450 && p.vx>SAFE_FINISH_SPEED && !oneTime.has('brake-last')){
+      if(distanceToFinish<1050 && p.vx>SAFE_FINISH_SPEED && !oneTime.has('brake-last')){
         oneTime.add('brake-last');banner('SLOW TO 14 KM/H OR LESS AT FINISH!',2.7);
       }
       if(p.x>=FINISH-90 && p.vx<=SAFE_FINISH_SPEED && p.contact){win();}
@@ -4872,8 +4872,8 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     if(replyActive&&speed>20)return {pose:'point',expr:'happy',reason:'baby reply'};
     if(panic>76 || speed>MAX_SPEED*TERROR_SPEED_RATIO)return {pose:'brace',expr:'terrified',reason:'speed panic'};
     if(panic>43)return {pose:'leanForward',expr:'confused',reason:'uneasy riding'};
-    if(speed>90)return {pose:'laugh',expr:'happy',reason:'enjoying cruise'};
-    if(speed>18)return {pose:'idle',expr:'happy',reason:'easy roll'};
+    if(speed>MAX_SPEED*.39)return {pose:'laugh',expr:'happy',reason:'enjoying cruise'};
+    if(speed>MAX_SPEED*.10)return {pose:'idle',expr:'happy',reason:'easy roll'};
     return {pose:'idle',expr:'original_photo',reason:'stopped'};
   }
   function crashSequenceStage(){
@@ -5457,7 +5457,7 @@ function babyFigure(expr, thrown=false, pose='idle'){
       ctx.save();ctx.strokeStyle='rgba(255,255,255,.74)';ctx.lineWidth=2.5;
       ctx.beginPath();ctx.moveTo(87,305);ctx.lineTo(106,319);ctx.moveTo(109,301);ctx.lineTo(125,312);ctx.stroke();ctx.restore();
     }
-    if(p.vx>110){
+    if(p.vx>MAX_SPEED*.55){
       ctx.save();ctx.strokeStyle='rgba(238,251,255,.75)';ctx.lineWidth=2.5;ctx.lineCap='round';
       for(let i=0;i<3;i++){
         const yy=177+i*27,shift=(time*(p.vx/6)+i*29)%56;
