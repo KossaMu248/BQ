@@ -2622,17 +2622,98 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     ctx.restore();
   }
 
-  // v10.63: cleaned approved burning-bin sprite only — just the bin and the fire.
-  // World position and hitbox stay unchanged.
+  // The six V163 frame keys all refer to the same static picture.
+  // Preserve its painted metal body while the flames, smoke and embers move.
+  let fireBinSource=null, fireBinCrop=null;
+  function fireBinImageCrop(im){
+    if(im===fireBinSource)return fireBinCrop;
+    fireBinSource=im;fireBinCrop=null;
+    try{
+      const sc=Math.min(1,512/Math.max(im.naturalWidth,im.naturalHeight));
+      const w=Math.max(1,Math.round(im.naturalWidth*sc));
+      const h=Math.max(1,Math.round(im.naturalHeight*sc));
+      const work=document.createElement('canvas');work.width=w;work.height=h;
+      const c=work.getContext('2d',{willReadFrequently:true});
+      c.drawImage(im,0,0,w,h);
+      const pixels=c.getImageData(0,0,w,h).data;
+      let left=w,top=h,right=-1,bottom=-1,visible=0;
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+        if(pixels[(y*w+x)*4+3]<18)continue;
+        visible++;
+        if(x<left)left=x;if(x>right)right=x;
+        if(y<top)top=y;if(y>bottom)bottom=y;
+      }
+      // Don't draw an opaque white image background onto the street.
+      if(!visible||visible>w*h*.97)return null;
+      left=Math.max(0,left-2);top=Math.max(0,top-2);
+      right=Math.min(w-1,right+2);bottom=Math.min(h-1,bottom+2);
+      fireBinCrop={sx:left/sc,sy:top/sc,sw:(right-left+1)/sc,sh:(bottom-top+1)/sc};
+    }catch(_){fireBinCrop={sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight};}
+    return fireBinCrop;
+  }
   function drawFireBin(h){
     const gy=groundAt(h.x);if(gy===null)return;
-    const frame=((Math.floor(time*9 + h.x*.00041)%6)+6)%6;
-    const im=images['v162_firebin_'+frame];
-    if(!im || !im.naturalWidth){drawFireBinLegacy(h);return;}
+    const im=images.v162_firebin_0;
+    if(!im?.naturalWidth){drawFireBinLegacy(h);return;}
+    const crop=fireBinImageCrop(im);
+    if(!crop){drawFireBinLegacy(h);return;}
+    const t=time+h.x*.00053;
     ctx.save();ctx.translate(h.x,gy);
+    ctx.fillStyle='rgba(29,34,36,.25)';
+    ctx.beginPath();ctx.ellipse(0,1,35,6,0,0,Math.PI*2);ctx.fill();
+    const glow=ctx.createRadialGradient(0,-67,3,0,-67,76);
+    glow.addColorStop(0,'rgba(255,123,40,.20)');
+    glow.addColorStop(1,'rgba(255,123,40,0)');
+    ctx.fillStyle=glow;ctx.fillRect(-77,-126,154,126);
+    // Only a few translucent wisps, behind the bin. No detached smoke cloud.
+    for(let i=0;i<4;i++){
+      const age=(t*(.26+i*.024)+i*.25)%1;
+      const x=Math.sin(t*.67+i*1.9)*5+age*12-5,y=-98-age*55,r=5+age*11;
+      const haze=ctx.createRadialGradient(x,y,1,x,y,r);
+      haze.addColorStop(0,'rgba(70,66,65,'+(.17*(1-age)).toFixed(3)+')');
+      haze.addColorStop(1,'rgba(70,66,65,0)');
+      ctx.fillStyle=haze;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    }
+    // Alpha-trim the existing illustrated sprite; its foot stays at groundAt(x).
+    const width=Math.min(99,144*crop.sw/crop.sh),height=144;
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-    // Draw just the cleaned transparent sprite, grounded like the original hazard.
-    ctx.drawImage(im,-48,-146,96,146);
+    ctx.drawImage(im,crop.sx,crop.sy,crop.sw,crop.sh,-width*.5,-height,width,height);
+    // Five flame tongues whose shapes and tips actually change every frame.
+    // Their roots stay tucked into the same bin opening.
+    for(const [x,hgt,i] of [[-21,35,0],[-11,52,1],[2,62,2],[15,46,3],[23,30,4]]){
+      const wave=Math.sin(t*(7+i*.61)+i*2.1);
+      const sway=Math.sin(t*(4.2+i*.36)+i)*5;
+      const height=hgt*(.83+.17*wave);
+      ctx.save();ctx.translate(x,-77);
+      const outer=ctx.createLinearGradient(0,4,sway,-height);
+      outer.addColorStop(0,'rgba(173,47,20,.90)');
+      outer.addColorStop(.5,'rgba(242,92,27,.96)');
+      outer.addColorStop(1,'rgba(255,179,56,.92)');
+      ctx.fillStyle=outer;ctx.beginPath();ctx.moveTo(-11,5);
+      ctx.bezierCurveTo(-16,-height*.30,sway-8,-height*.70,sway,-height);
+      ctx.bezierCurveTo(sway+9,-height*.65,15,-height*.27,11,5);
+      ctx.closePath();ctx.fill();
+      const inner=ctx.createLinearGradient(0,3,sway,-height*.73);
+      inner.addColorStop(0,'#ff8a2c');inner.addColorStop(.53,'#ffd25d');
+      inner.addColorStop(1,'#fff0a1');
+      ctx.fillStyle=inner;ctx.beginPath();ctx.moveTo(-5,4);
+      ctx.quadraticCurveTo(-8,-height*.36,sway,-height*.72);
+      ctx.quadraticCurveTo(sway+5,-height*.33,6,4);
+      ctx.closePath();ctx.fill();ctx.restore();
+    }
+    // Draw a dark rolled rim over the flame roots: no floating fire.
+    ctx.fillStyle='rgba(28,38,40,.78)';
+    ctx.beginPath();ctx.ellipse(0,-74,27,4.9,0,0,Math.PI);ctx.fill();
+    ctx.strokeStyle='rgba(203,160,113,.72)';ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.ellipse(0,-75,28,5.2,0,0,Math.PI);ctx.stroke();
+    for(let i=0;i<6;i++){
+      const age=(t*(.80+i*.07)+i*.181)%1;
+      const x=(i%2?-1:1)*(5+i*3)+Math.sin(t*1.7+i)*4;
+      const y=-87-age*70;
+      ctx.globalAlpha=.72*(1-age);
+      ctx.fillStyle=i%3?'#ffad43':'#ffe49a';
+      ctx.beginPath();ctx.arc(x,y,1.2+(i%3)*.36,0,Math.PI*2);ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -2893,7 +2974,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   }
   function drawRoadsideHazard(h){
     const gy=groundAt(h.x);if(gy===null)return false;
-    if(h.type==='firebin'){drawDangerSurface(h.x,gy,60);drawFireBin(h);return true;}
+    if(h.type==='firebin'){drawFireBin(h);return true;}
     if(h.type==='roadblock'){if(!drawV160WorldSprite('roadblock',h.x,gy,104,69))v146DrawMaintenanceBarrier(h.x,gy);return true;}
     if(!['scooter','cart','glass'].includes(h.type))return false;
     const kind={scooter:'scooter_broken',cart:'cart_hazard',glass:'glass'}[h.type];
