@@ -80,7 +80,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d', {alpha:false});
   // Ten world pixels represent one metre: one px/s equals 0.36 km/h.
-  const W = canvas.width, H = canvas.height, WORLD_STRETCH=1.50, stretchX=x=>Math.round(x*WORLD_STRETCH), FINISH=stretchX(28000), MAX_SPEED=110, SAFE_FINISH_SPEED=38, BRAKE_ZONE=950, REVERSE_MAX=52, KMH_PER_SPEED=.36;
+  const W = canvas.width, H = canvas.height, WORLD_STRETCH=1.50, stretchX=x=>Math.round(x*WORLD_STRETCH), FINISH=stretchX(28000), MAX_SPEED=140, SAFE_FINISH_SPEED=38, BRAKE_ZONE=950, REVERSE_MAX=52, KMH_PER_SPEED=.36, PUKE_SPEED_RATIO=.95, TERROR_SPEED_RATIO=.86;
   const $ = id => document.getElementById(id);
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
   const lerp=(a,b,t)=>a+(b-a)*t;
@@ -1264,13 +1264,14 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   // Puking is a timed heave, not a nonstop garden hose. Emission starts from
   // the original sick-face's actual mouth (sprite local ~x64,y74).
   function updatePukeAnimation(dt){
-    const atSpeed=state==='playing'&&!baby&&bike.vx>MAX_SPEED*.81&&panic>=72;
+    // Holding pedal to 95% of max always causes vomiting, without relying on a random panic episode.
+    const atSpeed=state==='playing'&&!baby&&bike.vx>=MAX_SPEED*PUKE_SPEED_RATIO;
     const forced=state==='playing'&&!baby&&time<panicEpisodeUntil&&panicEpisodeType==='PUKE ATTACK';
     const triggered=atSpeed||forced;
     if(triggered && time>=pukeNextWave && time>=pukeWaveEnd){
       pukeWaveStart=time;
-      pukeWaveEnd=time+rand(.47,.92);
-      pukeNextWave=pukeWaveEnd+rand(.85,1.50);
+      pukeWaveEnd=time+rand(.66,.94);
+      pukeNextWave=pukeWaveEnd+rand(.12,.22);
       pukeWaveCount++;
     }
     const active=triggered&&time<pukeWaveEnd;
@@ -1278,19 +1279,19 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     // slowly eases nausea. HP does not regenerate by itself: Billys pickups heal it.
     if(state==='playing' && !baby){
       if(active){
-        const dose=clamp((bike.vx-MAX_SPEED*.77)/(MAX_SPEED*.23),.24,1);
-        pukeExposure=clamp(pukeExposure+dt*(.34+.56*dose),0,1);
-        // Vomiting is a serious, clearly visible HP threat; no passive drain between heaves.
-        const loss=dt*(10+26*pukeExposure)*(.65+.35*dose);
+        const dose=clamp((bike.vx-MAX_SPEED*.90)/(MAX_SPEED*.10),.5,1);
+        pukeExposure=clamp(pukeExposure+dt*(.55+.95*dose),0,1);
+        // Continuous full throttle is dangerous: only the visible heaves drain HP.
+        const loss=dt*(30+32*pukeExposure)*(.65+.35*dose);
         health=clamp(health-loss,0,100);
         pukeDamageTotal+=loss;
         if(health<=0){crash('baby sickness overwhelmed the bear');}
       }else{
-        pukeExposure=Math.max(0,pukeExposure-dt*(bike.vx<MAX_SPEED*.62?.105:.018));
+        pukeExposure=Math.max(0,pukeExposure-dt*(bike.vx<MAX_SPEED*.80?.30:.10));
       }
     }
     if(active && state==='playing'){
-      const intensity=clamp((bike.vx-MAX_SPEED*.82)/(MAX_SPEED*.18),0,1);
+      const intensity=clamp((bike.vx-MAX_SPEED*.93)/(MAX_SPEED*.07),.22,1);
       const t=clamp((time-pukeWaveStart)/Math.max(.1,pukeWaveEnd-pukeWaveStart),0,1);
       const heave=Math.sin(t*Math.PI); // naturally tapers at either end of each burst
       const mouth=partPos(43+(60-49)*1.08,207+(72-134)*1.08); // v87: real sick-sprite lip, SAME bike-local transform as the seat
@@ -1337,7 +1338,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     // A short LIVE connection makes it unmistakable that each wave begins
     // at the baby's actual sick-sprite mouth, not from the bear or rear wheel.
     if(state==='playing'&&!baby&&time<pukeWaveEnd &&
-        (bike.vx>MAX_SPEED*.75||panicEpisodeType==='PUKE ATTACK')){
+        (bike.vx>=MAX_SPEED*PUKE_SPEED_RATIO||panicEpisodeType==='PUKE ATTACK')){
       const mouth=partPos(43+(60-49)*1.08,207+(72-134)*1.08);
       const progress=clamp((time-pukeWaveStart)/Math.max(.1,pukeWaveEnd-pukeWaveStart),0,1);
       const pulse=Math.max(.08,Math.sin(progress*Math.PI));
@@ -1360,7 +1361,9 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   }
   function updateBabyPanicEvent(dt){
     if(state!=='playing')return;
-    if(panic>=94 && !bike.broken)panicHighTime+=dt;
+    // Speed-induced panic follows the deterministic vomit threshold, not a random meltdown.
+    if(bike.vx>=MAX_SPEED*.82)panicHighTime=0;
+    else if(panic>=94 && !bike.broken)panicHighTime+=dt;
     else panicHighTime=Math.max(0,panicHighTime-dt*1.8);
     if(time<panicEpisodeUntil){
       panicShock=Math.max(0,(panicEpisodeUntil-time)/2.4);
@@ -1379,7 +1382,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     panicShock=Math.max(0,panicShock-dt*2);
     if(panicHighTime<3.6 || time<panicEpisodeCooldown)return;
     panicEvents++;
-    panicEpisodeType=choose(['PUKE ATTACK','GRAB BRAKES','PANIC WOBBLE','SCREAMING FIT']);
+    panicEpisodeType=choose(['GRAB BRAKES','PANIC WOBBLE','SCREAMING FIT']);
     panicEpisodeUntil=time+2.1;
     panicEpisodeCooldown=time+rand(10,15);
     panicReliefUntil=time+5.5;
@@ -1430,7 +1433,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     if(state==='playing'){
       // Brake first, then reverse while held once the bike has stopped.
       if(brake) p.vx=p.vx>0?Math.max(0,p.vx-225*dt):Math.max(-REVERSE_MAX,p.vx-(p.contact?105:45)*dt);
-      else if(gas) p.vx+=(p.contact?(p.vx<70?55:27):28)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
+      else if(gas) p.vx+=(p.contact?(p.vx<70?24:p.vx<112?15:9):22)*(lostParts.has('leftLeg')||lostParts.has('rightLeg')?0.72:1)*dt;
       // Keep momentum while coasting; at high speed the rider must actually brake.
       if(!gas&&!brake)p.vx*=Math.exp(-(p.contact?.16:.065)*dt);
       if(p.contact && p.vx>8)p.vx+=clamp(slopeAt(p.x+24),-.7,.75)*245*dt;
@@ -1571,16 +1574,17 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
         crash('forgot the brakes at Mälaren');
       }
       const airStress=!p.contact ? 18:0;
-      // Calm at cruising speed; the highest downhill speed can still trigger panic.
-      const velocityStress=Math.max(0,p.vx/MAX_SPEED-.50)*110;
+      // Fear builds in stages: cruising is fine, 86%+ is terrifying, 95%+ makes the baby sick.
+      const speedRatio=clamp(Math.max(0,p.vx)/MAX_SPEED,0,1);
+      const speedPanic=clamp((speedRatio-.60)/(.94-.60)*100,0,100);
       let danger=0;
       for(const h of hazards)if(h.x>p.x&&h.x<p.x+260)danger=Math.max(danger,(260-(h.x-p.x))*.14);
       let pitAhead=groundAt(p.x+120)===null?17:0;
-      const isSickNow=time<pukeWaveEnd && (p.vx>MAX_SPEED*.75||panicEpisodeType==='PUKE ATTACK');
-      const target=clamp(Math.max(isSickNow?97:4,(Math.abs(p.va)*15+velocityStress+airStress+Math.abs(p.a)*19+danger+pitAhead)*1.45),3,100);
-      const easedPanic=time<panicReliefUntil&&!isSickNow?Math.min(target,55):target;
-      // The meter must visually agree with the baby's active heaving pose.
-      panic=lerp(panic,easedPanic,clamp(dt*(easedPanic>panic?(isSickNow?7.5:2.1):1.22),0,1));
+      const isSickNow=time<pukeWaveEnd && (p.vx>=MAX_SPEED*PUKE_SPEED_RATIO||panicEpisodeType==='PUKE ATTACK');
+      const target=clamp(Math.max(isSickNow?100:4,speedPanic,(Math.abs(p.va)*15+airStress+Math.abs(p.a)*19+danger+pitAhead)*1.45),3,100);
+      const easedPanic=time<panicReliefUntil&&!isSickNow&&speedRatio<.82?Math.min(target,55):target;
+      // Baby reacts quickly enough to be visibly terrified before the puke threshold.
+      panic=lerp(panic,easedPanic,clamp(dt*(easedPanic>panic?(speedRatio>=.82?4.2:2.1):1.22),0,1));
       updateBabyPanicEvent(dt);
       const mood=(panic<11?'original_photo':panic<22?'happy':panic<37?'confused':panic<53?'excited':panic<70?'derp':panic<84?'terrified':panic<95?'sick':'terrified');
       p.expression=mood;
@@ -1739,7 +1743,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     $('progressFill').style.width=`${clamp((bike.x-200)/(FINISH-200)*100,0,100)}%`;
     const kph=Math.round(Math.abs(bike.vx)*KMH_PER_SPEED);
     $('speedValue').textContent=(bike.vx<-.5?'R ':'')+kph+' KM/H';
-    $('speedValue').style.color= bike.x>FINISH-BRAKE_ZONE&&bike.vx>SAFE_FINISH_SPEED?'#ff826d':kph>33?'#ffe08b':'#c6fff6';
+    $('speedValue').style.color= bike.x>FINISH-BRAKE_ZONE&&bike.vx>SAFE_FINISH_SPEED?'#ff826d':bike.vx>=MAX_SPEED*PUKE_SPEED_RATIO?'#ff826d':bike.vx>=MAX_SPEED*TERROR_SPEED_RATIO?'#ffe08b':'#c6fff6';
     const left=Math.max(0,Math.round((FINISH-bike.x)/10));
     const stopLabel=$('brakeAlert');
     stopLabel.textContent= bike.x>FINISH-BRAKE_ZONE ? (bike.vx>SAFE_FINISH_SPEED?'BRAKE':'STOP AHEAD') : '';
@@ -4858,7 +4862,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
       && time-dialogueStartedAt<0.65;
     const settle={pose:'idle',expr:'original_photo',reason:'not riding'};
     if(state!=='playing')return settle;
-    if(time<pukeWaveEnd && (speed>MAX_SPEED*.75||(panicEpisodeType==='PUKE ATTACK'&&time<panicEpisodeUntil)))return {pose:'sick',expr:'sick',reason:'puke heave'};
+    if(time<pukeWaveEnd && (speed>=MAX_SPEED*PUKE_SPEED_RATIO||(panicEpisodeType==='PUKE ATTACK'&&time<panicEpisodeUntil)))return {pose:'sick',expr:'sick',reason:'puke heave'};
     if(time<damagePoseUntil)return {pose:'bump',expr:'terrified',reason:'impact'};
     if(!bike.contact && airTime>.18)return {pose:'brace',expr:'terrified',reason:'normal riding hop'};
     if(time<landingPoseUntil)return landingWasHard?{pose:'brace',expr:'terrified',reason:'hard landing'}:{pose:'leanForward',expr:'confused',reason:'soft landing'};
@@ -4866,7 +4870,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     if(braking && speed>24)return {pose:'leanForward',expr:'confused',reason:'braking'};
     if(motion.wheelie>.19 || (accelerating&&speed>35&&time-throttleStartedAt<.78))return {pose:'leanBack',expr:panic>65?'terrified':'excited',reason:'wheelie/acceleration'};
     if(replyActive&&speed>20)return {pose:'point',expr:'happy',reason:'baby reply'};
-    if(panic>76 || speed>MAX_SPEED*.73)return {pose:'brace',expr:'terrified',reason:'speed panic'};
+    if(panic>76 || speed>MAX_SPEED*TERROR_SPEED_RATIO)return {pose:'brace',expr:'terrified',reason:'speed panic'};
     if(panic>43)return {pose:'leanForward',expr:'confused',reason:'uneasy riding'};
     if(speed>90)return {pose:'laugh',expr:'happy',reason:'enjoying cruise'};
     if(speed>18)return {pose:'idle',expr:'happy',reason:'easy roll'};
@@ -5056,7 +5060,7 @@ function babyFigure(expr, thrown=false, pose='idle'){
   // One source of truth for the on-bike sprite and the panic-meter portrait.
   function mountedBabyCelName(pose){
     if(previewPose && babyFrameNames.includes(previewPose))return previewPose;
-    if(time<pukeWaveEnd && (bike.vx>MAX_SPEED*.75||(panicEpisodeType==='PUKE ATTACK'&&time<panicEpisodeUntil)))return 'sick';
+    if(time<pukeWaveEnd && (bike.vx>=MAX_SPEED*PUKE_SPEED_RATIO||(panicEpisodeType==='PUKE ATTACK'&&time<panicEpisodeUntil)))return 'sick';
     if(pose==='sick')return 'sick';
     if(pose==='airtime'||pose==='bump')return 'terror';
     if(pose==='landing')return 'leanForward';
