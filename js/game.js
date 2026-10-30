@@ -479,7 +479,7 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
     ctx.restore();return true;
   }
   function load(){
-    const files=[...Object.keys(window.BEARLY_ASSETS||{}).filter(n=>n.startsWith('v105_')||n.startsWith('v149_')||n.startsWith('v151_')||n.startsWith('v153_hud_')),...['bear_pose_brake','bear_pose_coast','bear_pose_hurt','bear_pose_idle','bear_pose_jump','bear_pose_land','bear_pose_pedal','bear_pose_wheelie',...Array.from({length:4},(_,i)=>'bear_pedal_'+i)].flatMap(k=>Array.from({length:5},(_,i)=>`v77_${k}_face_${i}`)),...['hoodie','video','toll','scooter'].flatMap(k=>Array.from({length:6},(_,j)=>Array.from({length:6},(_,i)=>`v72_${k}_${j}_${i}`)).flat()),...['hoodie','video','toll','scooter'].flatMap(k=>Array.from({length:6},(_,j)=>[0,3].map(f=>`v158_firecracker_${k}_${j}_${f}`))).flat(),...['happy','terrified','angry','laughing','crying','knocked','excited','sick'].map(n=>'v158_hud_'+n),...['istanbul','corner','cafe','piccola'].map(n=>'v96_shop_'+n),...Array.from({length:6},(_,i)=>'v96_civilian_'+i),'v60_fire_bin',...['utility','lamp','bike_rack','trash_bin','planter','guardrail','market_crates'].map(n=>'v98_clean_'+n),'v95_stone_border','v95_rockbed','v95_garden_screen','v95_noticeboard', ...['bench_a','bench_b','planter','market_crates','courtyard_fence','bike_rack','lamp','bollards','guardrail','swings','playground','utility','bus_shelter','trash_bin','barrier','scooter_broken','cart_hazard','glass','rocks','scrap','sign_debris','fireworks','construction','tree'].map(n=>'v60_'+n),...Array.from({length:6},(_,i)=>'v162_firebin_'+i),...['bottle','rock','firecracker'].map(n=>'v162_projectile_'+n),...Array.from({length:6},(_,i)=>'v59_fire_'+i),...['bottle','rock','firecracker'].flatMap(k=>Array.from({length:6},(_,i)=>'v59_enemy_'+k+'_'+i)),...['scooter_broken','bench_a','bench_b','bus_shelter','bike_rack','trash_bin','planter','courtyard_fence','balcony','guardrail','lamp','bollards','utility','market_crates','playground','swings','metro_entrance','metro_signs','direction','barrier','glass','cart_hazard','construction','scrap','fireworks','rocks','sign_debris','tree'].map(n=>'v59_'+n),...['ride','wheelie','jump','landing','crash','flyoff','drag','recover'].map(n=>'sheet_pose_'+n),...['ride','wheelie','jump','land','recover'].map(n=>'bear_sheet_'+n),...['idle','pedal','coast','brake','wheelie','jump','land','hurt'].map(n=>'bear_pose_'+n),...['0','1','2','3'].map(n=>'bear_pedal_'+n),'v142_pizza_wrapper','v85_bear_prone_crash','v89_metro_station','v115_metro_complete','v116_metro_clean','v118_metro_complete','v118_close_tree','v118_close_bush_0','v118_close_bush_1','v118_close_bush_2','metro_option_logos','metro_option_panel','v89_bike_crashed','v91_nearfoliage_0','v91_nearfoliage_1','v91_nearfoliage_2','v92_near_branch',...Array.from({length:6},(_,i)=>'v99_front_'+i),'v99_front_canopy',...Array.from({length:8},(_,i)=>'v102_lens_'+i),...Array.from({length:8},(_,i)=>'v102_close_'+i),...Array.from({length:9},(_,i)=>'v103_bank_'+i),...Array.from({length:9},(_,i)=>'v104_shrub_'+i),...Array.from({length:4},(_,i)=>'v104_close_'+i),...Array.from({length:4},(_,i)=>'v103_bloom_'+i),...Array.from({length:16},(_,i)=>'v87_prone_'+i),'bear_upper','bear_upper_rightarm_injured','bear_leg_original','bear_leg_clean','bear_glove_part','bear_body','bear_head','bear_arm','bear_boot',...expressionNames.map(x=>'face_'+x),...babyFrameNames.map(x=>'baby_pose_'+x),...babyCrashFrames.map(x=>'baby_crash_'+x),...v125CrashCels,...v131CrashCels,...['castle_hill','apartment_terrace','metro_gard','metro_strand','waterfront','park_props','swedish_sign','flower_rocks','lakeside_dock','road_slope','road_arched','road_bridge'].map(x=>'env_'+x),...['hoodie','scooter','filmmaker','fireworks','kiosk','metro_kiosk','mailboxes','props_cart','props_cones','props_bins','props_barricade','street_signs'].map(x=>'v53_'+x),...['hoodie_night','hoodie_olive','filmmaker_charcoal','filmmaker_ink','scooter_night','scooter_olive','fireworks_burgundy','fireworks_dark'].map(x=>'v56_'+x),...['homes','metro','market','forest','lake'].flatMap((z)=>Array.from({length:({homes:4,metro:3,market:3,forest:4,lake:4})[z]},(_,i)=>`v57_scene_${z}_${i}`)),...['homes','metro','market','forest','lake'].map(z=>'v57_pano_'+z)];
+    const files=[...v164FrameNames,...Object.keys(window.BEARLY_ASSETS||{}).filter(n=>n.startsWith('v105_')||n.startsWith('v149_')||n.startsWith('v151_')||n.startsWith('v153_hud_')),...['bear_pose_brake','bear_pose_coast','bear_pose_hurt','bear_pose_idle','bear_pose_jump','bear_pose_land','bear_pose_pedal','bear_pose_wheelie',...Array.from({length:4},(_,i)=>'bear_pedal_'+i)].flatMap(k=>Array.from({length:5},(_,i)=>`v77_${k}_face_${i}`)),...['hoodie','video','toll','scooter'].flatMap(k=>Array.from({length:6},(_,j)=>Array.from({length:6},(_,i)=>`v72_${k}_${j}_${i}`)).flat()),...['hoodie','video','toll','scooter'].flatMap(k=>Array.from({length:6},(_,j)=>[0,3].map(f=>`v158_firecracker_${k}_${j}_${f}`))).flat(),...['happy','terrified','angry','laughing','crying','knocked','excited','sick'].map(n=>'v158_hud_'+n),...['istanbul','corner','cafe','piccola'].map(n=>'v96_shop_'+n),...Array.from({length:6},(_,i)=>'v96_civilian_'+i),'v60_fire_bin',...['utility','lamp','bike_rack','trash_bin','planter','guardrail','market_crates'].map(n=>'v98_clean_'+n),'v95_stone_border','v95_rockbed','v95_garden_screen','v95_noticeboard', ...['bench_a','bench_b','planter','market_crates','courtyard_fence','bike_rack','lamp','bollards','guardrail','swings','playground','utility','bus_shelter','trash_bin','barrier','scooter_broken','cart_hazard','glass','rocks','scrap','sign_debris','fireworks','construction','tree'].map(n=>'v60_'+n),...Array.from({length:6},(_,i)=>'v162_firebin_'+i),...['bottle','rock','firecracker'].map(n=>'v162_projectile_'+n),...Array.from({length:6},(_,i)=>'v59_fire_'+i),...['bottle','rock','firecracker'].flatMap(k=>Array.from({length:6},(_,i)=>'v59_enemy_'+k+'_'+i)),...['scooter_broken','bench_a','bench_b','bus_shelter','bike_rack','trash_bin','planter','courtyard_fence','balcony','guardrail','lamp','bollards','utility','market_crates','playground','swings','metro_entrance','metro_signs','direction','barrier','glass','cart_hazard','construction','scrap','fireworks','rocks','sign_debris','tree'].map(n=>'v59_'+n),...['ride','wheelie','jump','landing','crash','flyoff','drag','recover'].map(n=>'sheet_pose_'+n),...['ride','wheelie','jump','land','recover'].map(n=>'bear_sheet_'+n),...['idle','pedal','coast','brake','wheelie','jump','land','hurt'].map(n=>'bear_pose_'+n),...['0','1','2','3'].map(n=>'bear_pedal_'+n),'v142_pizza_wrapper','v85_bear_prone_crash','v89_metro_station','v115_metro_complete','v116_metro_clean','v118_metro_complete','v118_close_tree','v118_close_bush_0','v118_close_bush_1','v118_close_bush_2','metro_option_logos','metro_option_panel','v89_bike_crashed','v91_nearfoliage_0','v91_nearfoliage_1','v91_nearfoliage_2','v92_near_branch',...Array.from({length:6},(_,i)=>'v99_front_'+i),'v99_front_canopy',...Array.from({length:8},(_,i)=>'v102_lens_'+i),...Array.from({length:8},(_,i)=>'v102_close_'+i),...Array.from({length:9},(_,i)=>'v103_bank_'+i),...Array.from({length:9},(_,i)=>'v104_shrub_'+i),...Array.from({length:4},(_,i)=>'v104_close_'+i),...Array.from({length:4},(_,i)=>'v103_bloom_'+i),...Array.from({length:16},(_,i)=>'v87_prone_'+i),'bear_upper','bear_upper_rightarm_injured','bear_leg_original','bear_leg_clean','bear_glove_part','bear_body','bear_head','bear_arm','bear_boot',...expressionNames.map(x=>'face_'+x),...babyFrameNames.map(x=>'baby_pose_'+x),...babyCrashFrames.map(x=>'baby_crash_'+x),...v125CrashCels,...v131CrashCels,...['castle_hill','apartment_terrace','metro_gard','metro_strand','waterfront','park_props','swedish_sign','flower_rocks','lakeside_dock','road_slope','road_arched','road_bridge'].map(x=>'env_'+x),...['hoodie','scooter','filmmaker','fireworks','kiosk','metro_kiosk','mailboxes','props_cart','props_cones','props_bins','props_barricade','street_signs'].map(x=>'v53_'+x),...['hoodie_night','hoodie_olive','filmmaker_charcoal','filmmaker_ink','scooter_night','scooter_olive','fireworks_burgundy','fireworks_dark'].map(x=>'v56_'+x),...['homes','metro','market','forest','lake'].flatMap((z)=>Array.from({length:({homes:4,metro:3,market:3,forest:4,lake:4})[z]},(_,i)=>`v57_scene_${z}_${i}`)),...['homes','metro','market','forest','lake'].map(z=>'v57_pano_'+z)];
     return Promise.all(files.map(n=>new Promise(resolve=>{
       const img=new Image();img.onload=resolve;img.onerror=resolve;
       img.src=(window.BEARLY_V163_ASSETS&&window.BEARLY_V163_ASSETS[n]) || (window.BEARLY_ASSETS&&window.BEARLY_ASSETS[n]) || `assets/${n}.png`;images[n]=img;
@@ -881,6 +881,15 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
 
   // v10.62: use the projectile artwork in the Game Art Bible in-game, not
   // geometric placeholders. Motion and physics are unchanged.
+  const v164FrameNames = [
+    ...Array.from({length:8},(_,i)=>'v164_firebin_'+i),
+    ...['molotov','firecracker'].flatMap(k=>Array.from({length:6},(_,i)=>'v164_'+k+'_'+i))
+  ];
+  function v164Frame(prefix,count,seconds,fps){
+    // Wait for the complete sequence, avoiding flicker during partial loads.
+    if(!Array.from({length:count},(_,i)=>images[prefix+i]).every(im=>im?.naturalWidth))return null;
+    return images[prefix+(Math.floor(Math.max(0,seconds)*fps)%count)];
+  }
   function drawThrownItems(){
     const names=['bottle','rock','firecracker'];
     if(!names.every(k=>images['v162_projectile_'+k]?.naturalWidth))return drawThrownItemsLegacy();
@@ -898,6 +907,15 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
       }
       ctx.restore();
       ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);
+      const animated=p.kind==='rock'?null:v164Frame('v164_'+(p.kind==='bottle'?'molotov':'firecracker')+'_',6,3.3-p.life,12);
+      if(animated){
+        // Repaired PNGs share a body anchor at (768,768). Scale the rigid body,
+        // not the changing smoke bounds; compensate for the artwork's diagonal.
+        const scale=p.kind==='bottle'?37/190:36/150;
+        ctx.rotate(p.kind==='bottle'?Math.PI/4:Math.PI/8);
+        ctx.drawImage(animated,-768*scale,-768*scale,1536*scale,1536*scale);
+        ctx.restore();continue;
+      }
       const im=images['v162_projectile_'+p.kind];
       const dims={bottle:[37,24],rock:[26,22],firecracker:[36,20]}[p.kind]||[32,20];
       ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
@@ -2653,6 +2671,22 @@ window.BEARLY_ASSETS['v153_hud_knocked']='assets/v153_hud_knocked_2.png';
   }
   function drawFireBin(h){
     const gy=groundAt(h.x);if(gy===null)return;
+    const animated=v164Frame('v164_firebin_',8,time+h.x*.00053,10);
+    if(animated){
+      // Measured metal-rim extents and feet; flame bounds never set body scale.
+      const frame=Math.floor(Math.max(0,time+h.x*.00053)*10)%8;
+      const [left,right,rim,foot]=[
+        [52,253,368,571],[48,254,375,580],[46,250,375,579],[41,243,383,586],
+        [37,233,381,577],[27,233,378,581],[23,231,382,586],[21,225,363,565]
+      ][frame];
+      const sx=58/(right-left),sy=72/(foot-rim);
+      ctx.save();ctx.translate(h.x,gy);
+      ctx.fillStyle='rgba(29,34,36,.25)';
+      ctx.beginPath();ctx.ellipse(0,1,32,6,0,0,Math.PI*2);ctx.fill();
+      ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+      ctx.drawImage(animated,-(left+right)*.5*sx,-foot*sy,animated.naturalWidth*sx,animated.naturalHeight*sy);
+      ctx.restore();return;
+    }
     const im=images.v162_firebin_0;
     if(!im?.naturalWidth){drawFireBinLegacy(h);return;}
     const crop=fireBinImageCrop(im);
@@ -6265,6 +6299,7 @@ function babyFigure(expr, thrown=false, pose='idle'){
     puke(){panic=90;panicHighTime=0;panicEpisodeType='PUKE ATTACK';panicEpisodeUntil=time+2.1;panicEpisodeCooldown=time+12;pukeWheelSlipUntil=time+3.4;panicEvents++;return true;},
     parts(){return mountedParts();}
   };
+  window.BEARLY_V164_QA=()=>({assets:Object.fromEntries(v164FrameNames.map(n=>[n,!!images[n]?.naturalWidth])),firebinFps:10,projectileFps:12});
   window.BEARLY_V163_QA=()=>({
     newAssets:Object.fromEntries([...Array.from({length:6},(_,i)=>'v162_firebin_'+i),
       ...['bottle','rock','firecracker'].map(n=>'v162_projectile_'+n)].map(n=>

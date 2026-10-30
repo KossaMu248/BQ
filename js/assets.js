@@ -245,3 +245,25 @@ window.BEARLY_ASSETS["v149_hud_airtime"]="assets/v149_airtime.webp";
 /* V10.51 original sized rider, two new expressions. */
 window.BEARLY_ASSETS["v151_baby_pose_excited"]="assets/v151_baby_pose_excited.png";
 window.BEARLY_ASSETS["v151_baby_pose_sick"]="assets/v151_baby_pose_sick.png";
+
+// V164 verified individual animation frames.
+window.BEARLY_ASSETS['v164_firebin_0']='assets/v164_firebin_0.png';
+window.BEARLY_ASSETS['v164_firebin_1']='assets/v164_firebin_1.png';
+window.BEARLY_ASSETS['v164_firebin_2']='assets/v164_firebin_2.png';
+window.BEARLY_ASSETS['v164_firebin_3']='assets/v164_firebin_3.png';
+window.BEARLY_ASSETS['v164_firebin_4']='assets/v164_firebin_4.png';
+window.BEARLY_ASSETS['v164_firebin_5']='assets/v164_firebin_5.png';
+window.BEARLY_ASSETS['v164_firebin_6']='assets/v164_firebin_6.png';
+window.BEARLY_ASSETS['v164_firebin_7']='assets/v164_firebin_7.png';
+window.BEARLY_ASSETS['v164_molotov_0']='assets/v164_molotov_0.png';
+window.BEARLY_ASSETS['v164_molotov_1']='assets/v164_molotov_1.png';
+window.BEARLY_ASSETS['v164_molotov_2']='assets/v164_molotov_2.png';
+window.BEARLY_ASSETS['v164_molotov_3']='assets/v164_molotov_3.png';
+window.BEARLY_ASSETS['v164_molotov_4']='assets/v164_molotov_4.png';
+window.BEARLY_ASSETS['v164_molotov_5']='assets/v164_molotov_5.png';
+window.BEARLY_ASSETS['v164_firecracker_0']='assets/v164_firecracker_0.png';
+window.BEARLY_ASSETS['v164_firecracker_1']='assets/v164_firecracker_1.png';
+window.BEARLY_ASSETS['v164_firecracker_2']='assets/v164_firecracker_2.png';
+window.BEARLY_ASSETS['v164_firecracker_3']='assets/v164_firecracker_3.png';
+window.BEARLY_ASSETS['v164_firecracker_4']='assets/v164_firecracker_4.png';
+window.BEARLY_ASSETS['v164_firecracker_5']='assets/v164_firecracker_5.png';
